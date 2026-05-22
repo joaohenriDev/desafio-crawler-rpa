@@ -66,21 +66,28 @@ desafio-crawler-rpa/
 
 # ▶️ 4. Como Executar o Projeto
 
-## 🔹 Execução Local
+### 🔹 Execução Local Nativa
+#### Pré-requisitos
+Python 3.11+
 
-### Pré-requisitos
+Pip
 
-- Python 3.11+
-- Pip
-
----
-
-## Clonar o Repositório
-
+1. Clonar o Repositório
+   
+Bash
 ```bash
-git clone <URL-DO-REPOSITORIO>
+git clone https://github.com/joaohenriDev/desafio-crawler-rpa.git
 cd desafio-crawler-rpa
-````
+```
+
+2. Criar e Ativar Ambiente Virtual
+Windows (PowerShell):
+
+PowerShell
+```bash
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
 
 ---
 
@@ -130,50 +137,32 @@ pytest -v
 
 ---
 
-# 🐳 5. Execução com Docker
+# 🐳 5. Execução Conteinerizada (Docker)
+Opção Recomendada (via Docker Compose)
+Para construir a imagem, gerenciar volumes e rodar a aplicação inteira com um único comando:
 
-## Build da Imagem
+Bash
+docker compose up --build
+Opção Alternativa (via Docker CLI)
+Caso prefira rodar os comandos de forma manual e individual:
 
-```bash
+Bash
+# Build da imagem local
 docker build -t desafio-crawler .
-```
 
----
-
-## Executar Container
-
-### Linux/macOS
-
-```bash
+# Execução no Linux/macOS
 docker run --rm -v "$(pwd)/output:/app/output" desafio-crawler
-```
 
-### Windows PowerShell
-
-```powershell
+# Execução no Windows (PowerShell)
 docker run --rm -v "${PWD}/output:/app/output" desafio-crawler
-```
 
 ---
 
-# 📊 6. Estrutura dos Dados
+# 📊 6. Estrutura e Amostra dos Dados
+Os dados são exportados simultaneamente em arquivos JSON e CSV com codificação universal UTF-8 para a pasta ./output.
 
-Os dados são exportados simultaneamente em:
-
-* JSON
-* CSV
-
-Com codificação:
-
-```text
-UTF-8
-```
-
----
-
-## Exemplo JSON
-
-```json
+Exemplo de Saída Estruturada (JSON)
+JSON
 [
   {
     "title": "A Light in the Attic",
@@ -182,8 +171,6 @@ UTF-8
     "rating": 3
   }
 ]
-```
-
 ---
 
 # 🧩 7. Schema dos Dados
@@ -197,154 +184,58 @@ UTF-8
 
 ---
 
-# ⛓️ 8. Pipeline CI/CD
+# ⛓️ 8. Pipeline CI/CD (.gitlab-ci.yml)
+A esteira automatizada executa as validações corporativas divididas em quatro estágios em ambientes isolados:
 
-O pipeline foi estruturado em quatro estágios principais:
+Plaintext
+[Lint] ──► [Test] ──► [Build] ──► [Deploy]
+✅ Lint (flake8): Valida conformidade estrutural com as boas práticas da PEP8 e qualidade de escrita.
 
-```text
-[Lint] → [Test] → [Build] → [Deploy]
-```
+🧪 Test (pytest): Executa os testes de unidade usando injeção de fixtures de texto locais para testar a inteligência do parser sem dependência da rede.
 
----
+🐳 Build (dind): Realiza o login criptografado no container registry do GitLab, constrói a imagem e realiza o upload seguro.
 
-## ✅ Lint
-
-Validação de:
-
-* PEP8
-* qualidade de código
-* padronização
-
-Ferramenta utilizada:
-
-```bash
-flake8
-```
-
----
-
-## 🧪 Test
-
-Execução automatizada com:
-
-```bash
-pytest
-```
-
-Garantindo:
-
-* integridade
-* previsibilidade
-* estabilidade
-
----
-
-## 🐳 Build
-
-Responsável por:
-
-* autenticação no GitLab Registry
-* build da imagem Docker
-* push automatizado
-
----
-
-## 🚀 Deploy
-
-Simulação de deploy contínuo no AWS ECS.
-
-Execução restrita à branch:
-
-```bash
-main
-```
-
+🚀 Deploy (main branch): Simulação controlada de atualização de infraestrutura contínua na nuvem AWS ECS.
 ---
 
 # 🧠 9. Decisões Técnicas e Arquitetura
+SOLID: Divisão modular estrita onde as camadas de rede, extração e persistência são completamente independentes (Single Responsibility Principle).
 
-## SOLID
+Segurança: Dockerfile configurado sob a política de privilégios mínimos utilizando usuário worker sem privilégios administrativos de root.
 
-Aplicação de princípios como:
-
-* responsabilidade única
-* desacoplamento
-* abstração reutilizável
-
----
-
-## Segurança
-
-* containers sem root
-* isolamento de execução
-* login seguro no registry
-
----
-
-## Performance
-
-* Session pooling
-* cache de dependências
-* otimização de requests HTTP
+Performance: Reutilização de conexões e sockets abertos via Session pooling, mitigando latência em requisições consecutivas.
 
 ---
 
 # 🤖 10. Uso de Inteligência Artificial
+A Inteligência Artificial atuou estritamente como co-piloto técnico no processo de desenvolvimento para:
 
-A IA foi utilizada como ferramenta de apoio técnico para:
+Refinamento arquitetural e mapeamento inicial de estruturas.
 
-* refinamento arquitetural
-* geração de boilerplates
-* regex
-* debugging
-* estruturação do CI/CD
+Geração veloz de arquivos de mock (boilerplates HTML) para testes robustos.
 
-Todas as implementações foram revisadas e refinadas manualmente para adequação às exigências técnicas do projeto.
+Estruturação inicial da árvore de jobs do arquivo do GitLab CI/CD.
 
----
-
-# 🔮 11. Roadmap e Melhorias Futuras
-
-## Browser Automation
-
-* Selenium
-* Playwright
+Todas as implementações geradas foram auditadas, refinadas e reestruturadas manualmente para conformidade com as regras do edital.
 
 ---
 
-## Observabilidade
+# 🔮 11. Roadmap e Evoluções Futuras
+Browser Automation
+Integração do Playwright ou Selenium em modo Headless caso o alvo mude sua renderização para componentes assíncronos dinâmicos em JavaScript.
 
-* Prometheus
-* Grafana
-* métricas customizadas
+Observabilidade
+Implementação do prometheus_client para expor volumetria de raspagem, tempo de resposta do servidor e métricas de erros HTTP.
 
----
-
-## Persistência
-
-* PostgreSQL
-* MongoDB
+Persistência
+Substituição dos arquivos locais por uma conexão transacional de banco de dados estruturado (PostgreSQL) ou NoSQL (MongoDB).
 
 ---
 
-## Cloud & Infra
+# 📌 12. Possíveis Evoluções Técnicas
+Implementação de filas com RabbitMQ ou Apache Kafka para arquiteturas distribuídas.
 
-* Terraform
-* Kubernetes
-* ECS real
-* Helm Charts
-
----
-
-# 📌 12. Possíveis Evoluções
-
-* Retry automático
-* Proxy rotation
-* Rate limiting
-* Logs distribuídos
-* Mensageria com RabbitMQ
-* Dead Letter Queue
-* Feature Flags
+Mecanismos avançados de retry automático com backoff exponencial e rotação de proxies residenciais.
 
 ---
 
