@@ -1,0 +1,16 @@
+version: "3.8"
+
+services:
+  scraper:
+    container_name: desafio_scraper_container
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    image: desafio-crawler:latest
+
+    volumes:
+      - ./output:/app/output
+
+    restart: "no"
