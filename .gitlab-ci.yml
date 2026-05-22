@@ -1,0 +1,77 @@
+# Imagem Docker padrão usada para rodar os scripts de lint e teste
+image: python:3.11-slim
+
+# Definição das 4 etapas obrigatórias exigidas pelo edital
+stages:
+  - lint
+  - test
+  - build
+  - deploy
+
+# BÔNUS: Configuração de Cache para acelerar os próximos builds no GitLab
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+    - .pytest_cache/
+
+# Configurações globais de ambiente
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  # Define o nome da imagem usando as variáveis nativas do GitLab Container Registry
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+
+# ----------------------------------------------------------------------
+# STAGE 1: Lint (Validação estética e boas práticas do código)
+# ----------------------------------------------------------------------
+run_lint:
+  stage: lint
+  before_script:
+    - pip install flake8
+  script:
+    # Varre a pasta de código fonte. Falha o Job se encontrar erros graves.
+    - flake8 src/ --max-line-length=120
+
+# ----------------------------------------------------------------------
+# STAGE 2: Test (Execução dos testes unitários simulados)
+# ----------------------------------------------------------------------
+run_tests:
+  stage: test
+  before_script:
+    - pip install -r requirements.txt
+  script:
+    # Executa o pytest e garante falha se algum teste quebrar
+    - python -m pytest -v
+
+# ----------------------------------------------------------------------
+# STAGE 3: Build (Construção e publicação da imagem Docker empacotada)
+# ----------------------------------------------------------------------
+build_image:
+  stage: build
+  image: docker:24.0.5
+  services:
+    - docker:24.0.5-dind
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    # Autentica no Container Registry do GitLab de forma silenciosa e segura
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    # Constrói a imagem utilizando o Dockerfile local
+    - docker build -t $IMAGE_TAG .
+    # Faz o upload (push) para o servidor da empresa
+    - docker push $IMAGE_TAG
+
+# ----------------------------------------------------------------------
+# STAGE 4: Deploy (Simulação de entrega contínua na AWS cloud da empresa)
+# ----------------------------------------------------------------------
+simulate_deploy:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "=== Iniciando Conexão Homologada com a AWS Cloud ==="
+    - echo "Atualizando definições de tarefa (Task Definition) no AWS ECS..."
+    - echo "aws ecs update-service --cluster crawler-cluster --service scraper-service --force-new-deployment"
+    - echo "=== Deploy realizado com sucesso no AWS ECS! ==="
+  rules:
+    # Regra estrita do edital: só roda se o commit for integrado na branch principal
+    - if: $CI_COMMIT_BRANCH == "main"
