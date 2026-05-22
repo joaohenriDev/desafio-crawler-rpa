@@ -1,4 +1,5 @@
 import logging
+import re
 
 from bs4 import BeautifulSoup
 
@@ -38,24 +39,39 @@ class HtmlParser:
                 availability_element = pod.select_one(
                     "p.instock.availability"
                 )
-                rating_element = pod.select_one("p.star-rating")
+                rating_element = pod.select_one(
+                    "p.star-rating"
+                )
 
                 title = (
-                    title_element.get("title", "Desconhecido")
+                    title_element.get(
+                        "title",
+                        "Desconhecido",
+                    )
                     if title_element
                     else "Desconhecido"
                 )
 
                 price_text = (
-                    price_element.text.replace("£", "").strip()
+                    price_element.text
                     if price_element
-                    else "0"
+                    else "0.0"
                 )
 
-                price = float(price_text)
+                price_match = re.search(
+                    r"\d+\.\d+",
+                    price_text,
+                )
+
+                price = (
+                    float(price_match.group())
+                    if price_match
+                    else 0.0
+                )
 
                 in_stock = (
-                    "In stock" in availability_element.text
+                    "In stock"
+                    in availability_element.text
                     if availability_element
                     else False
                 )
@@ -63,13 +79,17 @@ class HtmlParser:
                 rating = 0
 
                 if rating_element:
-                    classes = rating_element.get("class", [])
+                    classes = rating_element.get(
+                        "class",
+                        [],
+                    )
 
                     rating = next(
                         (
                             cls.RATING_MAP[class_name]
                             for class_name in classes
-                            if class_name in cls.RATING_MAP
+                            if class_name
+                            in cls.RATING_MAP
                         ),
                         0,
                     )
